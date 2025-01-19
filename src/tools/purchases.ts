@@ -7,7 +7,13 @@ export class PurchaseTools {
     return [
       {
         name: "purchase_list",
-        description: "List purchases with pagination and date filtering",
+        description: `List purchases from your Iaptic account.
+- Returns a paginated list of purchases
+- Use limit and offset for pagination (default: 100 per page)
+- Filter by date range using startdate and enddate (ISO format)
+- Filter by customerId to see purchases from a specific customer
+- Results include purchase status, product info, and transaction details
+- Results are ordered by purchase date (newest first)`,
         inputSchema: {
           type: "object",
           properties: {
@@ -29,18 +35,28 @@ export class PurchaseTools {
             },
             customerId: { 
               type: "string", 
-              description: "Filter by customer ID" 
+              description: "Filter purchases by customer ID" 
             }
           }
         }
       },
       {
         name: "purchase_get",
-        description: "Get detailed information about a specific purchase",
+        description: `Get detailed information about a specific purchase.
+- Returns complete purchase details including:
+  - Product information
+  - Purchase status
+  - Associated transactions
+  - Customer information
+  - Subscription details (if applicable)
+- Required: purchaseId parameter`,
         inputSchema: {
           type: "object",
           properties: {
-            purchaseId: { type: "string", description: "ID of the purchase" }
+            purchaseId: { 
+              type: "string", 
+              description: "Unique identifier of the purchase" 
+            }
           },
           required: ["purchaseId"]
         }

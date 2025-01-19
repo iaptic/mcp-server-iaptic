@@ -7,7 +7,14 @@ export class StatisticsTools {
     return [
       {
         name: "stats_get",
-        description: "Get statistics about transactions and revenue",
+        description: `Get general transactions, revenue and usage statistics from your Iaptic account.
+- Returns aggregated metrics including:
+  - Total revenue
+  - Number of active subscriptions
+  - Customer growth metrics
+  - Transaction success rates
+  - Revenue by product type
+- Data is aggregated across all your applications`,
         inputSchema: {
           type: "object",
           properties: {}
@@ -15,7 +22,14 @@ export class StatisticsTools {
       },
       {
         name: "stats_app",
-        description: "Get app-specific statistics",
+        description: `Get statistics specific to your application.
+- Returns app-specific metrics including:
+  - App revenue and growth
+  - Active subscriptions for this app
+  - Customer metrics for this app
+  - Product performance statistics
+  - Transaction metrics
+- Uses the app name provided during server initialization`,
         inputSchema: {
           type: "object",
           properties: {}

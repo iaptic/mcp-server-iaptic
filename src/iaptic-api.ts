@@ -14,12 +14,73 @@ interface ListParams {
   enddate?: string;    // ISO date string
 }
 
+export interface IapticEvent {
+  tag: string;
+  type: string;
+  eventId: string;
+  context: {
+    appName: string;
+    eventType: string;
+    eventDate: string;
+    eventDateMs?: number;
+    applicationUsername?: string;
+    req_id?: string;
+    includeHeavyData?: boolean;
+  };
+  content: {
+    purchases: Array<{
+      platform: string;
+      receiptId: string;
+      purchaseId: string;
+      productId: string;
+    }>;
+    transactions: Array<{
+      productId: string;
+      offerId: string | null;
+      purchaseId: string;
+      transactionId: string;
+      sandbox: boolean;
+      platform: string;
+      purchaseDate: string;
+      isPending: boolean;
+      isConsumed: boolean;
+      isAcknowledged: boolean;
+      quantity: number;
+      amountUSD: number | null;
+      amountMicros: number | null;
+      currency: string | null;
+    }>;
+    refreshFailures: Array<{
+      platform: string;
+      reason: string;
+    }>;
+    products: Array<{
+      id: string;
+      type: string;
+      currency: string;
+      offers: Array<{
+        id: string;
+        pricingPhases: Array<{
+          priceMicros: number;
+          currency: string;
+        }>;
+      }>;
+    }>;
+    exchangeRates: Array<any>;
+    claims: Array<any>;
+    notifications: Array<any>;
+    tags: Record<string, string>;
+  };
+}
+
 export class IapticAPI {
   private client;
   private appName: string;
+  private apiKey: string;
 
   constructor(apiKey: string, appName: string) {
     this.appName = appName;
+    this.apiKey = apiKey;
     
     // Create base64 encoded auth token from appName:apiKey
     const authToken = Buffer.from(`${appName}:${apiKey}`).toString('base64');
@@ -30,6 +91,21 @@ export class IapticAPI {
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json'
       }
+    });
+
+    // Add request interceptor to log curl command
+    this.client.interceptors.request.use(request => {
+      const method = (request.method || 'GET').toUpperCase();
+      const url = (request.baseURL || '') + (request.url || '');
+      const headers = Object.entries(request.headers)
+        .map(([key, value]) => `-H '${key}: ${value}'`)
+        .join(' ');
+      const data = request.data ? `-d '${JSON.stringify(request.data)}'` : '';
+      const params = request.params ? 
+        '?' + new URLSearchParams(request.params).toString() : '';
+      
+      console.error(`curl -X ${method} '${url}${params}' ${headers} ${data}`);
+      return request;
     });
 
     // Add response interceptor for error handling
@@ -102,6 +178,53 @@ export class IapticAPI {
     };
   }) {
     const response = await this.client.post('/validate', data);
+    return response.data;
+  }
+
+  async getStripePrices() {
+    const response = await this.client.get('/stripe/prices');
+    return response.data;
+  }
+
+  async createStripeCheckout(data: {
+    offerId: string;
+    applicationUsername: string;
+    successUrl: string;
+    cancelUrl: string;
+    mode?: 'payment' | 'subscription';
+    accessToken?: string;
+  }) {
+    const response = await this.client.post('/stripe/checkout', data);
+    return response.data;
+  }
+
+  async createStripePortal(data: {
+    id: string;
+    accessToken: string;
+    returnUrl: string;
+  }) {
+    const response = await this.client.post('/stripe/portal', data);
+    return response.data;
+  }
+
+  async getStripePurchases(params: { accessToken?: string }) {
+    const response = await this.client.get('/stripe/purchases', { params });
+    return response.data;
+  }
+
+  async getEvents(params?: ListParams) {
+    const defaultParams = {
+      ...params,
+      appName: this.appName,
+      apiKey: this.apiKey
+    };
+    const response = await this.client.get('/events', { params: defaultParams });
+    
+    // Format the response
+    // if (response.data.ok && response.data.rows) {
+      // console.log(formattedEvents);
+    // }
+    
     return response.data;
   }
 } 

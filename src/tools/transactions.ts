@@ -7,7 +7,14 @@ export class TransactionTools {
     return [
       {
         name: "transaction_list",
-        description: "List transactions with pagination and date filtering",
+        description: `List financial transactions from your Iaptic account.
+- Returns a paginated list of transactions
+- Use limit and offset for pagination (default: 100 per page)
+- Filter by date range using startdate and enddate (ISO format)
+- Filter by purchaseId to see transactions for a specific purchase
+- Results include transaction status, amount, currency, and payment details
+- Results are ordered by transaction date (newest first)
+- Important: Use date filtering to avoid retrieving too many records`,
         inputSchema: {
           type: "object",
           properties: {
@@ -29,18 +36,29 @@ export class TransactionTools {
             },
             purchaseId: { 
               type: "string", 
-              description: "Filter by purchase ID" 
+              description: "Filter transactions by purchase ID" 
             }
           }
         }
       },
       {
         name: "transaction_get",
-        description: "Get detailed information about a specific transaction",
+        description: `Get detailed information about a specific transaction.
+- Returns complete transaction details including:
+  - Transaction status
+  - Amount and currency
+  - Payment method details
+  - Associated purchase information
+  - Customer information
+  - Timestamps and audit data
+- Required: transactionId parameter`,
         inputSchema: {
           type: "object",
           properties: {
-            transactionId: { type: "string", description: "ID of the transaction" }
+            transactionId: { 
+              type: "string", 
+              description: "Unique identifier of the transaction" 
+            }
           },
           required: ["transactionId"]
         }

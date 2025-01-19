@@ -14,6 +14,8 @@ import { CustomerTools } from "./tools/customers.js";
 import { PurchaseTools } from "./tools/purchases.js";
 import { TransactionTools } from "./tools/transactions.js";
 import { StatisticsTools } from "./tools/statistics.js";
+import { StripeTools } from "./tools/stripe.js";
+import { EventTools } from "./tools/events.js";
 
 declare global {
   namespace NodeJS {
@@ -32,6 +34,8 @@ class IapticServer {
     purchases: PurchaseTools;
     transactions: TransactionTools;
     statistics: StatisticsTools;
+    stripe: StripeTools;
+    events: EventTools;
   };
 
   constructor(apiKey: string, appName: string) {
@@ -42,7 +46,9 @@ class IapticServer {
       customers: new CustomerTools(this.api),
       purchases: new PurchaseTools(this.api),
       transactions: new TransactionTools(this.api),
-      statistics: new StatisticsTools(this.api)
+      statistics: new StatisticsTools(this.api),
+      stripe: new StripeTools(this.api),
+      events: new EventTools(this.api)
     };
 
     this.server = new Server(
@@ -61,7 +67,9 @@ class IapticServer {
           ...this.tools.customers.getTools(),
           ...this.tools.purchases.getTools(),
           ...this.tools.transactions.getTools(),
-          ...this.tools.statistics.getTools()
+          ...this.tools.statistics.getTools(),
+          ...this.tools.stripe.getTools(),
+          ...this.tools.events.getTools()
         ]
       };
     });
@@ -84,10 +92,20 @@ class IapticServer {
         if (name.startsWith('stats_')) {
           return await this.tools.statistics.handleTool(name, args);
         }
+        if (name.startsWith('stripe_')) {
+          return await this.tools.stripe.handleTool(name, args);
+        }
+        if (name.startsWith('event_')) {
+          return await this.tools.events.handleTool(name, args);
+        }
 
         throw new Error(`Unknown tool: ${name}`);
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error(`Error handling tool ${name}:`, errorMessage);
+        if (error instanceof Error && error.stack) {
+          console.error(error.stack);
+        }
         return {
           isError: true,
           content: [{ type: "text", text: `Error: ${errorMessage}` }]
