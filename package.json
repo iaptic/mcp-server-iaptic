@@ -8,7 +8,13 @@
     "mcp-server-iaptic": "./dist/server.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "src",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
