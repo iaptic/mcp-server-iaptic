@@ -1,0 +1,21 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - apiKey
+      - appName
+    properties:
+      apiKey:
+        type: string
+        description: The API key for the Iaptic server.
+      appName:
+        type: string
+        description: The name of the application.
+  commandFunction:
+    # A function that produces the CLI command to start the MCP on stdio.
+    |-
+    (config) => ({command: 'node', args: ['dist/server.js', '--api-key', config.apiKey, '--app-name', config.appName]})

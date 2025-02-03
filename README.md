@@ -1,9 +1,19 @@
 # MCP Server for Iaptic
+[![smithery badge](https://smithery.ai/badge/mcp-server-iaptic)](https://smithery.ai/server/mcp-server-iaptic)
 
 A Model Context Protocol server for interacting with the [Iaptic API](https://www.iaptic.com). This server allows Claude or other AIs to interact with your Iaptic data to answer questions about your customers, purchases, transactions, and statistics.
 
 ## Installation
 
+### Installing via Smithery
+
+To install Iaptic for Claude Desktop automatically via [Smithery](https://smithery.ai/server/mcp-server-iaptic):
+
+```bash
+npx -y @smithery/cli install mcp-server-iaptic --client claude
+```
+
+### Manual Installation
 ```bash
 # Run directly with npx
 npx mcp-server-iaptic --api-key YOUR_API_KEY --app-name YOUR_APP_NAME
