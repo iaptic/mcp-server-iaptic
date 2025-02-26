@@ -68,6 +68,20 @@ Add to your Claude Desktop configuration file:
 - `stats_get`: Get general statistics about transactions and revenue
 - `stats_app`: Get app-specific statistics
 
+### Events
+- `event_list`: List recent events with pagination and date filtering
+  - `limit`: Maximum number of events to return (default: 100)
+  - `offset`: Number of events to skip for pagination
+  - `startdate`: Filter events after this date (ISO format, e.g. 2024-01-01)
+  - `enddate`: Filter events before this date (ISO format, e.g. 2024-12-31)
+
+### App Management
+- `iaptic_switch_app`: Switch to a different Iaptic app
+  - `appName`: Name of the app to switch to
+  - `apiKey`: API key for the app
+- `iaptic_reset_app`: Reset to the default Iaptic app
+- `iaptic_current_app`: Get information about the currently active app
+
 ## Development
 
 ```bash

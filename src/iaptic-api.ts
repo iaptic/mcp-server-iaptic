@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 
 interface IapticErrorResponse {
   ok: false;
@@ -74,16 +74,24 @@ export interface IapticEvent {
 }
 
 export class IapticAPI {
-  private client;
+  private client!: AxiosInstance;
   private appName: string;
   private apiKey: string;
+  private defaultAppName: string;
+  private defaultApiKey: string;
 
   constructor(apiKey: string, appName: string) {
     this.appName = appName;
     this.apiKey = apiKey;
+    this.defaultAppName = appName;
+    this.defaultApiKey = apiKey;
     
+    this.initializeClient();
+  }
+
+  private initializeClient() {
     // Create base64 encoded auth token from appName:apiKey
-    const authToken = Buffer.from(`${appName}:${apiKey}`).toString('base64');
+    const authToken = Buffer.from(`${this.appName}:${this.apiKey}`).toString('base64');
 
     this.client = axios.create({
       baseURL: 'https://validator.iaptic.com/v3',
@@ -119,6 +127,30 @@ export class IapticAPI {
         throw error;
       }
     );
+  }
+
+  // Method to switch to a different app
+  switchApp(apiKey: string, appName: string): void {
+    this.apiKey = apiKey;
+    this.appName = appName;
+    this.initializeClient();
+    console.error(`Switched to app: ${appName}`);
+  }
+
+  // Method to reset to the default app
+  resetToDefaultApp(): void {
+    this.apiKey = this.defaultApiKey;
+    this.appName = this.defaultAppName;
+    this.initializeClient();
+    console.error(`Reset to default app: ${this.appName}`);
+  }
+
+  // Method to get current app info
+  getCurrentAppInfo(): { appName: string, isDefault: boolean } {
+    return {
+      appName: this.appName,
+      isDefault: this.appName === this.defaultAppName && this.apiKey === this.defaultApiKey
+    };
   }
 
   async getCustomers(params?: { limit?: number; offset?: number }) {
@@ -219,11 +251,6 @@ export class IapticAPI {
       apiKey: this.apiKey
     };
     const response = await this.client.get('/events', { params: defaultParams });
-    
-    // Format the response
-    // if (response.data.ok && response.data.rows) {
-      // console.log(formattedEvents);
-    // }
     
     return response.data;
   }

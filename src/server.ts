@@ -16,6 +16,7 @@ import { TransactionTools } from "./tools/transactions.js";
 import { StatisticsTools } from "./tools/statistics.js";
 import { StripeTools } from "./tools/stripe.js";
 import { EventTools } from "./tools/events.js";
+import { AppTools } from "./tools/app.js";
 
 declare global {
   namespace NodeJS {
@@ -36,6 +37,7 @@ class IapticServer {
     statistics: StatisticsTools;
     stripe: StripeTools;
     events: EventTools;
+    app: AppTools;
   };
 
   constructor(apiKey: string, appName: string) {
@@ -48,7 +50,8 @@ class IapticServer {
       transactions: new TransactionTools(this.api),
       statistics: new StatisticsTools(this.api),
       stripe: new StripeTools(this.api),
-      events: new EventTools(this.api)
+      events: new EventTools(this.api),
+      app: new AppTools(this.api)
     };
 
     this.server = new Server(
@@ -69,7 +72,8 @@ class IapticServer {
           ...this.tools.transactions.getTools(),
           ...this.tools.statistics.getTools(),
           ...this.tools.stripe.getTools(),
-          ...this.tools.events.getTools()
+          ...this.tools.events.getTools(),
+          ...this.tools.app.getTools()
         ]
       };
     });
@@ -98,6 +102,9 @@ class IapticServer {
         if (name.startsWith('event_')) {
           return await this.tools.events.handleTool(name, args);
         }
+        if (name.startsWith('iaptic_')) {
+          return await this.tools.app.handleTool(name, args);
+        }
 
         throw new Error(`Unknown tool: ${name}`);
       } catch (error: unknown) {
@@ -106,6 +113,7 @@ class IapticServer {
         if (error instanceof Error && error.stack) {
           console.error(error.stack);
         }
+
         return {
           isError: true,
           content: [{ type: "text", text: `Error: ${errorMessage}` }]
