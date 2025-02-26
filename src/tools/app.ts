@@ -10,8 +10,9 @@ export class AppTools {
         description: `Switch to a different Iaptic app.
 - Allows temporarily using a different app's credentials
 - All subsequent API calls will use the new app name and API key
+- If using a master key, only the app name needs to be changed
 - Useful for managing multiple apps in the same session
-- Required: appName and apiKey parameters`,
+- Required: appName parameter (apiKey required only if not using master key)`,
         inputSchema: {
           type: "object",
           properties: {
@@ -21,10 +22,10 @@ export class AppTools {
             },
             apiKey: { 
               type: "string", 
-              description: "API key for the app" 
+              description: "API key for the app (not required if using master key)" 
             }
           },
-          required: ["appName", "apiKey"]
+          required: ["appName"]
         }
       },
       {
@@ -42,7 +43,8 @@ export class AppTools {
         name: "iaptic_current_app",
         description: `Get information about the currently active Iaptic app.
 - Returns the current app name
-- Indicates whether using default or custom credentials`,
+- Indicates whether using default or custom credentials
+- Shows if using a master key for authentication`,
         inputSchema: {
           type: "object",
           properties: {}
@@ -53,7 +55,31 @@ export class AppTools {
 
   async handleTool(name: string, args: any) {
     switch (name) {
-      case 'iaptic_switch_app':
+      case 'iaptic_switch_app': {
+        const appInfo = this.api.getCurrentAppInfo();
+        
+        // If using master key, apiKey is not required
+        if (appInfo.usingMasterKey && !args.apiKey) {
+          this.api.switchApp('dummy-api-key', args.appName);
+          return {
+            content: [{
+              type: "text",
+              text: `Successfully switched to app: ${args.appName} (using master key)`
+            }]
+          };
+        }
+        
+        // Otherwise, apiKey is required
+        if (!args.apiKey) {
+          return {
+            isError: true,
+            content: [{
+              type: "text",
+              text: "Error: apiKey parameter is required when not using a master key"
+            }]
+          };
+        }
+        
         this.api.switchApp(args.apiKey, args.appName);
         return {
           content: [{
@@ -61,6 +87,7 @@ export class AppTools {
             text: `Successfully switched to app: ${args.appName}`
           }]
         };
+      }
 
       case 'iaptic_reset_app':
         this.api.resetToDefaultApp();
@@ -71,14 +98,15 @@ export class AppTools {
           }]
         };
 
-      case 'iaptic_current_app':
+      case 'iaptic_current_app': {
         const appInfo = this.api.getCurrentAppInfo();
         return {
           content: [{
             type: "text",
-            text: `Current app: ${appInfo.appName} (${appInfo.isDefault ? 'default' : 'custom'} credentials)`
+            text: `Current app: ${appInfo.appName} (${appInfo.isDefault ? 'default' : 'custom'} credentials, ${appInfo.usingMasterKey ? 'using master key' : 'using app-specific API key'})`
           }]
         };
+      }
 
       default:
         throw new Error(`Unknown app tool: ${name}`);

@@ -23,6 +23,7 @@ declare global {
     interface ProcessEnv {
       IAPTIC_API_KEY?: string;
       IAPTIC_APP_NAME?: string;
+      IAPTIC_MASTER_KEY?: string;
     }
   }
 }
@@ -40,9 +41,9 @@ class IapticServer {
     app: AppTools;
   };
 
-  constructor(apiKey: string, appName: string) {
+  constructor(apiKey: string, appName: string, masterKey?: string) {
     console.error('Starting Iaptic MCP Server...');
-    this.api = new IapticAPI(apiKey, appName);
+    this.api = new IapticAPI(apiKey, appName, masterKey);
     
     this.tools = {
       customers: new CustomerTools(this.api),
@@ -135,21 +136,24 @@ const { values } = parseArgs({
   args: process.argv.slice(2),
   options: {
     'api-key': { type: 'string' },
-    'app-name': { type: 'string' }
+    'app-name': { type: 'string' },
+    'master-key': { type: 'string' }
   }
 });
 
 // Get credentials from args or fallback to env vars
 const apiKey = values['api-key'] || process.env.IAPTIC_API_KEY;
 const appName = values['app-name'] || process.env.IAPTIC_APP_NAME;
+const masterKey = values['master-key'] || process.env.IAPTIC_MASTER_KEY;
 
-if (!apiKey) {
-  throw new Error("API key is required. Provide it via --api-key argument or IAPTIC_API_KEY environment variable");
+// If master key is provided, apiKey is optional
+if (!masterKey && !apiKey) {
+  throw new Error("API key is required. Provide API key via --api-key argument or IAPTIC_API_KEY environment variable.");
 }
 
 if (!appName) {
   throw new Error("App name is required. Provide it via --app-name argument or IAPTIC_APP_NAME environment variable");
 }
 
-const server = new IapticServer(apiKey, appName);
+const server = new IapticServer(apiKey || 'dummy-api-key', appName, masterKey || undefined);
 server.start().catch(console.error); 

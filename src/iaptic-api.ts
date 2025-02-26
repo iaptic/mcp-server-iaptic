@@ -79,19 +79,26 @@ export class IapticAPI {
   private apiKey: string;
   private defaultAppName: string;
   private defaultApiKey: string;
+  private masterKey: string | null = null;
 
-  constructor(apiKey: string, appName: string) {
+  constructor(apiKey: string, appName: string, masterKey?: string) {
     this.appName = appName;
     this.apiKey = apiKey;
     this.defaultAppName = appName;
     this.defaultApiKey = apiKey;
     
+    if (masterKey) {
+      this.masterKey = masterKey;
+      console.error('Using master key for authentication');
+    }
+    
     this.initializeClient();
   }
 
   private initializeClient() {
-    // Create base64 encoded auth token from appName:apiKey
-    const authToken = Buffer.from(`${this.appName}:${this.apiKey}`).toString('base64');
+    const authToken = this.masterKey 
+      ? Buffer.from(`${this.appName}:${this.masterKey}`).toString('base64')
+      : Buffer.from(`${this.appName}:${this.apiKey}`).toString('base64');
 
     this.client = axios.create({
       baseURL: 'https://validator.iaptic.com/v3',
@@ -131,10 +138,16 @@ export class IapticAPI {
 
   // Method to switch to a different app
   switchApp(apiKey: string, appName: string): void {
-    this.apiKey = apiKey;
-    this.appName = appName;
-    this.initializeClient();
-    console.error(`Switched to app: ${appName}`);
+    // If we have a master key, we only need to update the appName
+    if (this.masterKey) {
+      this.appName = appName;
+      console.error(`Switched to app: ${appName} (using master key)`);
+    } else {
+      this.apiKey = apiKey;
+      this.appName = appName;
+      this.initializeClient();
+      console.error(`Switched to app: ${appName}`);
+    }
   }
 
   // Method to reset to the default app
@@ -146,10 +159,11 @@ export class IapticAPI {
   }
 
   // Method to get current app info
-  getCurrentAppInfo(): { appName: string, isDefault: boolean } {
+  getCurrentAppInfo(): { appName: string, isDefault: boolean, usingMasterKey: boolean } {
     return {
       appName: this.appName,
-      isDefault: this.appName === this.defaultAppName && this.apiKey === this.defaultApiKey
+      isDefault: this.appName === this.defaultAppName && this.apiKey === this.defaultApiKey,
+      usingMasterKey: !!this.masterKey
     };
   }
 
