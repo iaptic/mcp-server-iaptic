@@ -145,9 +145,9 @@ export class IapticAPI {
     } else {
       this.apiKey = apiKey;
       this.appName = appName;
-      this.initializeClient();
       console.error(`Switched to app: ${appName}`);
     }
+    this.initializeClient();
   }
 
   // Method to reset to the default app
