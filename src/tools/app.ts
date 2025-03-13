@@ -3,14 +3,22 @@ import { IapticAPI } from '../iaptic-api.js';
 export class AppTools {
   constructor(private api: IapticAPI) {}
 
+  // Helper method to determine if appName is required for tools
+  isAppNameRequired(): boolean {
+    const appInfo = this.api.getCurrentAppInfo();
+    return appInfo.usingMasterKey;
+  }
+
   getTools() {
-    return [
+    const appNameRequired = this.isAppNameRequired();
+    
+    // Base set of tools
+    const tools = [
       {
         name: "iaptic_switch_app",
         description: `Switch to a different Iaptic app.
 - Allows temporarily using a different app's credentials
 - All subsequent API calls will use the new app name and API key
-- If using a master key, only the app name needs to be changed
 - Useful for managing multiple apps in the same session
 - Required: appName parameter (apiKey required only if not using master key)`,
         inputSchema: {
@@ -43,14 +51,15 @@ export class AppTools {
         name: "iaptic_current_app",
         description: `Get information about the currently active Iaptic app.
 - Returns the current app name
-- Indicates whether using default or custom credentials
-- Shows if using a master key for authentication`,
+- Indicates whether using default or custom credentials`,
         inputSchema: {
           type: "object",
           properties: {}
         }
       }
     ];
+    
+    return tools;
   }
 
   async handleTool(name: string, args: any) {
@@ -64,7 +73,7 @@ export class AppTools {
           return {
             content: [{
               type: "text",
-              text: `Successfully switched to app: ${args.appName} (using master key)`
+              text: `Successfully switched to app: ${args.appName}`
             }]
           };
         }

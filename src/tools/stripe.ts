@@ -1,9 +1,25 @@
 import { IapticAPI } from '../iaptic-api.js';
 
+interface SchemaProperties {
+  [key: string]: {
+    type: string;
+    description: string;
+  };
+}
+
+interface InputSchema {
+  type: string;
+  properties: SchemaProperties;
+  required?: string[];
+}
+
 export class StripeTools {
   constructor(private api: IapticAPI) {}
 
   getTools() {
+    const appInfo = this.api.getCurrentAppInfo();
+    const appNameRequired = appInfo.usingMasterKey;
+    
     return [
       {
         name: "stripe_prices",
@@ -14,16 +30,53 @@ export class StripeTools {
   - Description and metadata
   - Available pricing offers
   - Subscription terms if applicable
-- Results are cached for 5 minutes`,
+- Results are cached for 5 minutes${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
         inputSchema: {
           type: "object",
-          properties: {}
+          properties: {
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to fetch data from. Required when using master key."
+              }
+            } : {})
+          },
+          required: appNameRequired ? ["appName"] : undefined
         }
       }
     ];
   }
 
   async handleTool(name: string, args: any) {
+    const appInfo = this.api.getCurrentAppInfo();
+    
+    // If using master key and appName is provided, temporarily switch app
+    if (appInfo.usingMasterKey && args.appName) {
+      const currentApp = appInfo.appName;
+      
+      // Switch to the requested app
+      this.api.switchApp('dummy-api-key', args.appName);
+      
+      try {
+        // Execute the tool with the requested app
+        const result = await this._handleTool(name, args);
+        
+        // Switch back to the original app
+        this.api.switchApp('dummy-api-key', currentApp);
+        
+        return result;
+      } catch (error) {
+        // Make sure to switch back even if there's an error
+        this.api.switchApp('dummy-api-key', currentApp);
+        throw error;
+      }
+    }
+    
+    return this._handleTool(name, args);
+  }
+  
+  // Internal method to handle the tool after any app switching
+  private async _handleTool(name: string, args: any) {
     switch (name) {
       case 'stripe_prices':
         const prices = await this.api.getStripePrices();
@@ -35,7 +88,10 @@ export class StripeTools {
         };
 
       case 'stripe_checkout':
-        const checkout = await this.api.createStripeCheckout(args);
+        const checkout = await this.api.createStripeCheckout({
+          ...args,
+          appName: args.appName
+        });
         return {
           content: [{
             type: "text",
@@ -44,7 +100,10 @@ export class StripeTools {
         };
 
       case 'stripe_portal':
-        const portal = await this.api.createStripePortal(args);
+        const portal = await this.api.createStripePortal({
+          ...args,
+          appName: args.appName
+        });
         return {
           content: [{
             type: "text",
@@ -53,7 +112,10 @@ export class StripeTools {
         };
 
       case 'stripe_purchases':
-        const purchases = await this.api.getStripePurchases(args);
+        const purchases = await this.api.getStripePurchases({
+          ...args,
+          appName: args.appName
+        });
         return {
           content: [{
             type: "text",

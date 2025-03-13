@@ -40,9 +40,11 @@ class IapticServer {
     events: EventTools;
     app: AppTools;
   };
+  private readonly usingMasterKey: boolean;
 
   constructor(apiKey: string, appName: string, masterKey?: string) {
     console.error('Starting Iaptic MCP Server...');
+    this.usingMasterKey = !!masterKey;
     this.api = new IapticAPI(apiKey, appName, masterKey);
     
     this.tools = {

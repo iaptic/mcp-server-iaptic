@@ -12,6 +12,7 @@ interface ListParams {
   offset?: number;
   startdate?: string;  // ISO date string
   enddate?: string;    // ISO date string
+  appName?: string;    // Optional app name for master key users
 }
 
 export interface IapticEvent {
@@ -167,13 +168,13 @@ export class IapticAPI {
     };
   }
 
-  async getCustomers(params?: { limit?: number; offset?: number }) {
+  async getCustomers(params?: { limit?: number; offset?: number; appName?: string }) {
     const response = await this.client.get('/customers', { params });
     return response.data;
   }
 
-  async getCustomer(customerId: string) {
-    const response = await this.client.get(`/customers/${customerId}`);
+  async getCustomer(customerId: string, params?: { appName?: string }) {
+    const response = await this.client.get(`/customers/${customerId}`, { params });
     return response.data;
   }
 
@@ -186,8 +187,8 @@ export class IapticAPI {
     return response.data;
   }
 
-  async getPurchase(purchaseId: string) {
-    const response = await this.client.get(`/purchases/${purchaseId}`);
+  async getPurchase(purchaseId: string, params?: { appName?: string }) {
+    const response = await this.client.get(`/purchases/${purchaseId}`, { params });
     return response.data;
   }
 
@@ -200,18 +201,20 @@ export class IapticAPI {
     return response.data;
   }
 
-  async getTransaction(transactionId: string) {
-    const response = await this.client.get(`/transactions/${transactionId}`);
+  async getTransaction(transactionId: string, params?: { appName?: string }) {
+    const response = await this.client.get(`/transactions/${transactionId}`, { params });
     return response.data;
   }
 
-  async getStats() {
-    const response = await this.client.get('/stats');
+  async getStats(params?: { appName?: string }) {
+    const response = await this.client.get('/stats', { params });
     return response.data;
   }
 
-  async getAppStats() {
-    const response = await this.client.get(`/apps/${this.appName}/stats`);
+  async getAppStats(params?: { appName?: string }) {
+    // If appName param is provided, use it; otherwise use the current appName
+    const appToQuery = params?.appName || this.appName;
+    const response = await this.client.get(`/apps/${appToQuery}/stats`);
     return response.data;
   }
 

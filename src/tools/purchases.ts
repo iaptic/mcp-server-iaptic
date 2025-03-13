@@ -1,9 +1,25 @@
 import { IapticAPI } from '../iaptic-api.js';
 
+interface SchemaProperties {
+  [key: string]: {
+    type: string;
+    description: string;
+  };
+}
+
+interface InputSchema {
+  type: string;
+  properties: SchemaProperties;
+  required?: string[];
+}
+
 export class PurchaseTools {
   constructor(private api: IapticAPI) {}
 
   getTools() {
+    const appInfo = this.api.getCurrentAppInfo();
+    const appNameRequired = appInfo.usingMasterKey;
+    
     return [
       {
         name: "purchase_list",
@@ -13,7 +29,7 @@ export class PurchaseTools {
 - Filter by date range using startdate and enddate (ISO format)
 - Filter by customerId to see purchases from a specific customer
 - Results include purchase status, product info, and transaction details
-- Results are ordered by purchase date (newest first)`,
+- Results are ordered by purchase date (newest first)${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
         inputSchema: {
           type: "object",
           properties: {
@@ -36,8 +52,15 @@ export class PurchaseTools {
             customerId: { 
               type: "string", 
               description: "Filter purchases by customer ID" 
-            }
-          }
+            },
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to fetch data from. Required when using master key."
+              }
+            } : {})
+          },
+          required: appNameRequired ? ["appName"] : undefined
         }
       },
       {
@@ -49,22 +72,57 @@ export class PurchaseTools {
   - Associated transactions
   - Customer information
   - Subscription details (if applicable)
-- Required: purchaseId parameter`,
+- Required: purchaseId parameter${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
         inputSchema: {
           type: "object",
           properties: {
             purchaseId: { 
               type: "string", 
               description: "Unique identifier of the purchase" 
-            }
+            },
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to fetch data from. Required when using master key."
+              }
+            } : {})
           },
-          required: ["purchaseId"]
+          required: appNameRequired ? ["purchaseId", "appName"] : ["purchaseId"]
         }
       }
     ];
   }
 
   async handleTool(name: string, args: any) {
+    const appInfo = this.api.getCurrentAppInfo();
+    
+    // If using master key and appName is provided, temporarily switch app
+    if (appInfo.usingMasterKey && args.appName) {
+      const currentApp = appInfo.appName;
+      
+      // Switch to the requested app
+      this.api.switchApp('dummy-api-key', args.appName);
+      
+      try {
+        // Execute the tool with the requested app
+        const result = await this._handleTool(name, args);
+        
+        // Switch back to the original app
+        this.api.switchApp('dummy-api-key', currentApp);
+        
+        return result;
+      } catch (error) {
+        // Make sure to switch back even if there's an error
+        this.api.switchApp('dummy-api-key', currentApp);
+        throw error;
+      }
+    }
+    
+    return this._handleTool(name, args);
+  }
+  
+  // Internal method to handle the tool after any app switching
+  private async _handleTool(name: string, args: any) {
     switch (name) {
       case 'purchase_list':
         console.error(`Fetching purchases with params:`, args);
@@ -73,7 +131,8 @@ export class PurchaseTools {
           offset: args.offset,
           startdate: args.startdate,
           enddate: args.enddate,
-          customerId: args.customerId
+          customerId: args.customerId,
+          appName: args.appName
         });
         console.error(`Retrieved ${purchases.rows?.length || 0} purchases`);
         return {
@@ -84,7 +143,7 @@ export class PurchaseTools {
         };
 
       case 'purchase_get':
-        const purchase = await this.api.getPurchase(args.purchaseId);
+        const purchase = await this.api.getPurchase(args.purchaseId, { appName: args.appName });
         return {
           content: [{
             type: "text",

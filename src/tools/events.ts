@@ -1,9 +1,25 @@
 import { IapticAPI, IapticEvent } from '../iaptic-api.js';
 
+interface SchemaProperties {
+  [key: string]: {
+    type: string;
+    description: string;
+  };
+}
+
+interface InputSchema {
+  type: string;
+  properties: SchemaProperties;
+  required?: string[];
+}
+
 export class EventTools {
   constructor(private api: IapticAPI) {}
 
   getTools() {
+    const appInfo = this.api.getCurrentAppInfo();
+    const appNameRequired = appInfo.usingMasterKey;
+    
     return [
       {
         name: "event_list",
@@ -16,7 +32,7 @@ export class EventTools {
   - Purchase status changes
   - Subscription renewals
 - Use limit and offset for pagination
-- Results ordered by date (newest first)`,
+- Results ordered by date (newest first)${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
         inputSchema: {
           type: "object",
           properties: {
@@ -35,14 +51,50 @@ export class EventTools {
             enddate: {
               type: "string",
               description: "Filter events before this date (ISO format, e.g. 2024-12-31)"
-            }
-          }
+            },
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to fetch data from. Required when using master key."
+              }
+            } : {})
+          },
+          required: appNameRequired ? ["appName"] : undefined
         }
       }
     ];
   }
 
   async handleTool(name: string, args: any) {
+    const appInfo = this.api.getCurrentAppInfo();
+    
+    // If using master key and appName is provided, temporarily switch app
+    if (appInfo.usingMasterKey && args.appName) {
+      const currentApp = appInfo.appName;
+      
+      // Switch to the requested app
+      this.api.switchApp('dummy-api-key', args.appName);
+      
+      try {
+        // Execute the tool with the requested app
+        const result = await this._handleTool(name, args);
+        
+        // Switch back to the original app
+        this.api.switchApp('dummy-api-key', currentApp);
+        
+        return result;
+      } catch (error) {
+        // Make sure to switch back even if there's an error
+        this.api.switchApp('dummy-api-key', currentApp);
+        throw error;
+      }
+    }
+    
+    return this._handleTool(name, args);
+  }
+  
+  // Internal method to handle the tool after any app switching
+  private async _handleTool(name: string, args: any) {
     switch (name) {
       case 'event_list':
         console.error(`Fetching events with params:`, args);
