@@ -3,6 +3,8 @@
 
 A Model Context Protocol server for interacting with the [Iaptic API](https://www.iaptic.com). This server allows Claude or other AIs to interact with your Iaptic data to answer questions about your customers, purchases, transactions, and statistics.
 
+<a href="https://glama.ai/mcp/servers/u2l6kenhz6"><img width="380" height="200" src="https://glama.ai/mcp/servers/u2l6kenhz6/badge" alt="Iaptic Server MCP server" /></a>
+
 ## Installation
 
 ### Installing via Smithery
