@@ -61,6 +61,33 @@ export class EventTools {
           },
           required: appNameRequired ? ["appName"] : undefined
         }
+      },
+      {
+        name: "event_analysis",
+        description: `Get analysis of a specific event.
+- Returns analyzed context and content for the event
+- Optionally includes receipt validation details
+- Use an eventId from event_list results${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            eventId: {
+              type: "string",
+              description: "The event ID to analyze"
+            },
+            receipts: {
+              type: "boolean",
+              description: "Include receipt validation details (default: false)"
+            },
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to fetch data from. Required when using master key."
+              }
+            } : {})
+          },
+          required: appNameRequired ? ["eventId", "appName"] : ["eventId"]
+        }
       }
     ];
   }
@@ -106,6 +133,16 @@ export class EventTools {
           content: [{
             type: "text",
             text: formattedEvents
+          }]
+        };
+
+      case 'event_analysis':
+        console.error(`Fetching event analysis for:`, args.eventId);
+        const analysis = await this.api.getEventAnalysis(args.eventId, { receipts: args.receipts });
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(analysis, null, 2)
           }]
         };
 

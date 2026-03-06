@@ -265,4 +265,11 @@ export class IapticAPI {
     const response = await this.client.get('/events', { params });
     return response.data;
   }
+
+  async getEventAnalysis(eventId: string, params?: { receipts?: boolean }) {
+    const response = await this.client.get(`/events/${eventId}/analysis`, {
+      params: params?.receipts ? { receipts: '1' } : undefined
+    });
+    return response.data;
+  }
 } 
