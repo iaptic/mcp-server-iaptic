@@ -262,13 +262,7 @@ export class IapticAPI {
   }
 
   async getEvents(params?: ListParams) {
-    const defaultParams = {
-      ...params,
-      appName: this.appName,
-      apiKey: this.apiKey
-    };
-    const response = await this.client.get('/events', { params: defaultParams });
-    
+    const response = await this.client.get('/events', { params });
     return response.data;
   }
 } 
