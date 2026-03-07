@@ -43,8 +43,11 @@ Add to your Claude Desktop configuration file:
 ## Available Tools
 
 ### Customers
-- `customer_list`: List customers
-- `customer_get`: Get customer details by ID
+- `customer_list`: List customers with pagination
+- `customer_get`: Get detailed customer information by ID
+- `customer_subscription`: Get customer's active subscription status
+- `customer_transactions`: Get customer's transaction history
+- `customer_add_purchase`: Manually associate a purchase with a customer
 
 ### Purchases
 - `purchase_list`: List purchases
@@ -74,6 +77,12 @@ Add to your Claude Desktop configuration file:
   - `offset`: Number of events to skip for pagination
   - `startdate`: Filter events after this date (ISO format, e.g. 2024-01-01)
   - `enddate`: Filter events before this date (ISO format, e.g. 2024-12-31)
+- `event_analysis`: Get detailed analysis of a specific event
+  - `eventId`: The event ID to analyze
+  - `receipts`: Include receipt validation details (default: false)
+
+### Stripe
+- `stripe_prices`: Get available Stripe products and prices
 
 ### App Management
 - `iaptic_switch_app`: Switch to a different Iaptic app
