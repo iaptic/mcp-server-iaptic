@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/iaptic-mcp-server-iaptic-badge.jpg)](https://mseep.ai/app/iaptic-mcp-server-iaptic)
+
 # MCP Server for Iaptic
 [![smithery badge](https://smithery.ai/badge/mcp-server-iaptic)](https://smithery.ai/server/mcp-server-iaptic)
 
