@@ -266,10 +266,25 @@ export class IapticAPI {
     return response.data;
   }
 
-  async getEventAnalysis(eventId: string, params?: { receipts?: boolean }) {
+  async getValidatorVersion(): Promise<string> {
+    const response = await this.client.get('');
+    return response.data.version || '0.0.0';
+  }
+
+  async getEventDetails(eventId: string, params?: { receipts?: boolean }) {
+    const version = await this.getValidatorVersion();
+    const [major, minor] = version.split('.').map(Number);
+    if (major > 3 || (major === 3 && minor >= 12)) {
+      // Use the combined /events/:id endpoint (v3.12+)
+      const response = await this.client.get(`/events/${eventId}`, {
+        params: params?.receipts ? { receipts: 'true' } : undefined
+      });
+      return response.data;
+    }
+    // Fallback to analysis-only endpoint for older validators
     const response = await this.client.get(`/events/${eventId}/analysis`, {
       params: params?.receipts ? { receipts: '1' } : undefined
     });
-    return response.data;
+    return { analysis: response.data };
   }
 } 

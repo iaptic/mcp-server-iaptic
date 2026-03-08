@@ -63,17 +63,20 @@ export class EventTools {
         }
       },
       {
-        name: "event_analysis",
-        description: `Get analysis of a specific event.
-- Returns analyzed context and content for the event
+        name: "event_details",
+        description: `Get detailed information about a specific event.
+- Returns both analyzed data (context, content) and raw event data (request, response, external API calls)
+- Raw data includes the HTTP request/response and any external requests made (e.g. Apple/Google/Stripe API calls)
+- Sensitive fields are removed and large payloads are trimmed
 - Optionally includes receipt validation details
-- Use an eventId from event_list results${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
+- Use an eventId from event_list results
+- Requires validator version 3.12+${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
         inputSchema: {
           type: "object",
           properties: {
             eventId: {
               type: "string",
-              description: "The event ID to analyze"
+              description: "The event ID to get details for"
             },
             receipts: {
               type: "boolean",
@@ -136,13 +139,13 @@ export class EventTools {
           }]
         };
 
-      case 'event_analysis':
-        console.error(`Fetching event analysis for:`, args.eventId);
-        const analysis = await this.api.getEventAnalysis(args.eventId, { receipts: args.receipts });
+      case 'event_details':
+        console.error(`Fetching event details for:`, args.eventId);
+        const details = await this.api.getEventDetails(args.eventId, { receipts: args.receipts });
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(analysis, null, 2)
+            text: JSON.stringify(details, null, 2)
           }]
         };
 
