@@ -52,6 +52,10 @@ export class EventTools {
               type: "string",
               description: "Filter events before this date (ISO format, e.g. 2024-12-31)"
             },
+            raw: {
+              type: "boolean",
+              description: "Return raw JSON instead of formatted output (default: false)"
+            },
             ...(appNameRequired ? {
               appName: {
                 type: "string",
@@ -130,6 +134,14 @@ export class EventTools {
         console.error(`Fetching events with params:`, args);
         const events = await this.api.getEvents(args);
         console.error(`Retrieved ${events.rows?.length || 0} events`);
+        if (args.raw) {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify(events.rows.slice(0, 20), null, 2)
+            }]
+          };
+        }
         const formattedEvents = events.rows.slice(0,20).map(formatEvent).join('\n');
         console.error(formattedEvents);
         return {
@@ -158,9 +170,15 @@ export class EventTools {
 function formatEvent(event: IapticEvent): string {
   const { context, content } = event;
   const { transactions, products, refreshFailures } = content;
-  
+
   // Start with basic event info
   let output = `### ${new Date(context.eventDate).toLocaleString()}: ${context.eventType} by ${context.applicationUsername || 'system'}`;
+  output += `\n  eventId: ${event.eventId}`;
+
+  // Flag errors from tags (dashboard equivalent: content.tags.error === "_X")
+  if (content.tags?.error) {
+    output += `\n  [ERROR] Use event_details for error info`;
+  }
 
   // Add refresh failures if present
   if (refreshFailures?.length > 0) {
@@ -171,7 +189,7 @@ function formatEvent(event: IapticEvent): string {
   // Format transaction info with more details
   if (transactions?.length > 0) {
     output += '\nTransactions:';
-    output += transactions.map(t => 
+    output += transactions.map(t =>
       `\n  ${t.transactionId}: ${t.productId}${t.amountMicros ? ` (${(t.amountMicros/1000000).toFixed(2)} ${t.currency})` : ''}`
       + `${t.sandbox ? ' [SANDBOX]' : ''}`
       + `${t.isConsumed ? ' [CONSUMED]' : ''}`
@@ -182,8 +200,8 @@ function formatEvent(event: IapticEvent): string {
   // Add product info if present
   if (products?.length > 0) {
     output += '\nProducts:';
-    output += products.map(p => 
-      `\n  ${p.id} (${p.type})${p.offers?.[0]?.pricingPhases?.[0]?.priceMicros ? 
+    output += products.map(p =>
+      `\n  ${p.id} (${p.type})${p.offers?.[0]?.pricingPhases?.[0]?.priceMicros ?
         ` - ${(p.offers[0].pricingPhases[0].priceMicros/1000000).toFixed(2)} ${p.currency}` : ''}`
     ).join('');
   }
