@@ -3,6 +3,10 @@
 
 A Model Context Protocol server for interacting with the [Iaptic API](https://www.iaptic.com). This server allows Claude or other AIs to interact with your Iaptic data to answer questions about your customers, purchases, transactions, and statistics.
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/iaptic-mcp-server-iaptic).
+
 ## Installation
 
 ### Installing via Smithery
