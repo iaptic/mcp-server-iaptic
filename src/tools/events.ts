@@ -154,11 +154,19 @@ export class EventTools {
       case 'event_details':
         console.error(`Fetching event details for:`, args.eventId);
         const details = await this.api.getEventDetails(args.eventId, { receipts: args.receipts });
-        const truncatedDetails = truncateLongStrings(details, 128);
+        // Truncate only the raw HTTP data (request/response/externalRequests).
+        // The analysis section stays full-length so users still see complete
+        // product IDs, transaction IDs, and error messages — the clutter we
+        // want to cut is the multi-kilobyte Base64 receipts, certificates,
+        // and JWT tokens that live only under `raw`. Truthy guard also
+        // covers the pre-3.12 fallback path where `raw` is absent.
+        if (details.raw) {
+          details.raw = truncateLongStrings(details.raw, 128);
+        }
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(truncatedDetails, null, 2)
+            text: JSON.stringify(details, null, 2)
           }]
         };
 
