@@ -33,6 +33,7 @@
     "prepublishOnly": "npm run build",
     "build": "tsc",
     "start": "node --loader ts-node/esm src/server.ts",
-    "dev": "node --loader ts-node/esm src/server.ts"
+    "dev": "node --loader ts-node/esm src/server.ts",
+    "test": "npm run build && node --test tests/"
   }
 }
