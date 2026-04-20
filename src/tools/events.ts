@@ -154,10 +154,11 @@ export class EventTools {
       case 'event_details':
         console.error(`Fetching event details for:`, args.eventId);
         const details = await this.api.getEventDetails(args.eventId, { receipts: args.receipts });
+        const truncatedDetails = truncateLongStrings(details, 128);
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(details, null, 2)
+            text: JSON.stringify(truncatedDetails, null, 2)
           }]
         };
 
@@ -207,4 +208,23 @@ function formatEvent(event: IapticEvent): string {
   }
 
   return output;
+}
+
+export function truncateLongStrings(obj: any, maxLength: number): any {
+  if (typeof obj === 'string' && obj.length > maxLength) {
+    return obj.substring(0, maxLength) + '... [truncated]';
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => truncateLongStrings(item, maxLength));
+  }
+  if (typeof obj === 'object' && obj !== null) {
+    const result: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        result[key] = truncateLongStrings(obj[key], maxLength);
+      }
+    }
+    return result;
+  }
+  return obj;
 }
