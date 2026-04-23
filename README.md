@@ -77,8 +77,9 @@ Add to your Claude Desktop configuration file:
   - `offset`: Number of events to skip for pagination
   - `startdate`: Filter events after this date (ISO format, e.g. 2024-01-01)
   - `enddate`: Filter events before this date (ISO format, e.g. 2024-12-31)
-- `event_analysis`: Get detailed analysis of a specific event
-  - `eventId`: The event ID to analyze
+  - `raw`: Return raw JSON instead of formatted output (default: false)
+- `event_details`: Get detailed information about a specific event (validator 3.12+)
+  - `eventId`: The event ID to get details for
   - `receipts`: Include receipt validation details (default: false)
 
 ### Stripe
