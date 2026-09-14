@@ -5,7 +5,7 @@ A Model Context Protocol server for interacting with the [Iaptic API](https://ww
 
 ## Scope
 
-The server is read-only with respect to your Iaptic data: tools can query customers, purchases, transactions, events and statistics, but cannot modify records, issue refunds, or change your Iaptic configuration. Two groups of tools operate outside stored data: `stripe_checkout` / `stripe_portal` create Stripe payment-session links, and `iaptic_switch_app` / `iaptic_reset_app` change which app's credentials are used for subsequent queries.
+The server is read-only with respect to your Iaptic data: tools can query customers, purchases, transactions, events and statistics, but cannot modify records, issue refunds, or change your Iaptic configuration. Three groups of tools operate outside stored data: `stripe_checkout` / `stripe_portal` create Stripe payment-session links, `stripe_purchases` looks up a customer's purchases by checkout-session access token, and `iaptic_switch_app` / `iaptic_reset_app` change which app's credentials are used for subsequent queries.
 
 ## Installation
 
@@ -87,6 +87,8 @@ Add to your Claude Desktop configuration file:
 
 ### Stripe
 - `stripe_prices`: Get available Stripe products and prices
+- `stripe_purchases`: Get a customer's Stripe purchases using an access token
+  - `accessToken`: Access token received when the Stripe checkout session was created
 
 ### App Management
 - `iaptic_switch_app`: Switch to a different Iaptic app

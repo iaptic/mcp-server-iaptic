@@ -43,6 +43,29 @@ export class StripeTools {
           },
           required: appNameRequired ? ["appName"] : undefined
         }
+      },
+      {
+        name: "stripe_purchases",
+        description: `Get a customer's Stripe purchases using an access token.
+- Requires the accessToken returned when the Stripe checkout session was created (see stripe_checkout)
+- Returns the customer's purchases (subscriptions and payments) in the standard purchase format
+- Also returns a newAccessToken to use for subsequent queries${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            accessToken: {
+              type: "string",
+              description: "Access token received when the Stripe checkout session was created"
+            },
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to fetch data from. Required when using master key."
+              }
+            } : {})
+          },
+          required: appNameRequired ? ["accessToken", "appName"] : ["accessToken"]
+        }
       }
     ];
   }
