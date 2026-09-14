@@ -90,35 +90,6 @@ export class CustomerTools {
         }
       },
       {
-        name: "customer_add_purchase",
-        description: `Manually associate a customer with a purchase.
-- Links a purchase to a specific customer
-- Takes priority over receipt validation links
-- Useful for manual purchase management
-- Purchase format should be "platform:purchaseId", for example apple:123109519983
-- Required: customerId and purchaseId${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            customerId: { 
-              type: "string", 
-              description: "Application username of the customer" 
-            },
-            purchaseId: { 
-              type: "string", 
-              description: "ID of the purchase to associate" 
-            },
-            ...(appNameRequired ? {
-              appName: {
-                type: "string",
-                description: "Name of the app to fetch data from. Required when using master key."
-              }
-            } : {})
-          },
-          required: appNameRequired ? ["customerId", "purchaseId", "appName"] : ["customerId", "purchaseId"]
-        }
-      },
-      {
         name: "customer_subscription",
         description: `Get customer's subscription status.
 - Returns active subscription details if any
@@ -219,6 +190,24 @@ export class CustomerTools {
           content: [{
             type: "text",
             text: JSON.stringify(customer, null, 2)
+          }]
+        };
+
+      case 'customer_subscription':
+        const subscription = await this.api.getCustomerSubscription(args.customerId, { appName: args.appName });
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(subscription, null, 2)
+          }]
+        };
+
+      case 'customer_transactions':
+        const transactions = await this.api.getCustomerTransactions(args.customerId, { appName: args.appName });
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(transactions, null, 2)
           }]
         };
 

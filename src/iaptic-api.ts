@@ -287,4 +287,14 @@ export class IapticAPI {
     });
     return { analysis: response.data };
   }
-} 
+
+  async getCustomerSubscription(customerId: string, params?: { appName?: string }) {
+    const response = await this.client.get(`/customers/${customerId}/subscription`, { params });
+    return response.data;
+  }
+
+  async getCustomerTransactions(customerId: string, params?: { appName?: string }) {
+    const response = await this.client.get(`/customers/${customerId}/transactions`, { params });
+    return response.data;
+  }
+}

@@ -51,7 +51,6 @@ Add to your Claude Desktop configuration file:
 - `customer_get`: Get detailed customer information by ID
 - `customer_subscription`: Get customer's active subscription status
 - `customer_transactions`: Get customer's transaction history
-- `customer_add_purchase`: Manually associate a purchase with a customer
 
 ### Purchases
 - `purchase_list`: List purchases
