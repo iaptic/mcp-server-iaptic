@@ -3,6 +3,10 @@
 
 A Model Context Protocol server for interacting with the [Iaptic API](https://www.iaptic.com). This server allows Claude or other AIs to interact with your Iaptic data to answer questions about your customers, purchases, transactions, and statistics.
 
+## Scope
+
+The server is read-only with respect to your Iaptic data: tools can query customers, purchases, transactions, events and statistics, but cannot modify records, issue refunds, or change your Iaptic configuration. Two groups of tools operate outside stored data: `stripe_checkout` / `stripe_portal` create Stripe payment-session links, and `iaptic_switch_app` / `iaptic_reset_app` change which app's credentials are used for subsequent queries.
+
 ## Installation
 
 ### Installing via Smithery
