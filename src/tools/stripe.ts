@@ -99,10 +99,6 @@ export class StripeTools {
         inputSchema: {
           type: "object",
           properties: {
-            id: {
-              type: "string",
-              description: "Checkout session ID (cs_*) or subscription ID (sub_*) identifying the customer"
-            },
             accessToken: {
               type: "string",
               description: "Access token received when the Stripe checkout session was created"
@@ -118,7 +114,7 @@ export class StripeTools {
               }
             } : {})
           },
-          required: appNameRequired ? ["accessToken", "appName"] : ["accessToken"]
+          required: appNameRequired ? ["accessToken", "returnUrl", "appName"] : ["accessToken", "returnUrl"]
         }
       },
       {

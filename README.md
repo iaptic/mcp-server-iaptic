@@ -97,7 +97,6 @@ Add to your Claude Desktop configuration file:
 - `stripe_portal`: Create a Stripe Customer Portal session and return its URL
   - `accessToken`: Access token received when the Stripe checkout session was created
   - `returnUrl`: URL to return the customer to after managing their subscription
-  - `id`: Checkout session ID (`cs_*`) or subscription ID (`sub_*`) (optional)
 - `stripe_purchases`: Get a customer's Stripe purchases using an access token
   - `accessToken`: Access token received when the Stripe checkout session was created
 

@@ -248,9 +248,8 @@ export class IapticAPI {
   }
 
   async createStripePortal(data: {
-    id: string;
     accessToken: string;
-    returnUrl: string;
+    returnUrl?: string;
   }) {
     const response = await this.client.post('/stripe/portal', data);
     return response.data;
