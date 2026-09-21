@@ -4,6 +4,7 @@ interface SchemaProperties {
   [key: string]: {
     type: string;
     description: string;
+    enum?: string[];
   };
 }
 
@@ -42,6 +43,82 @@ export class StripeTools {
             } : {})
           },
           required: appNameRequired ? ["appName"] : undefined
+        }
+      },
+      {
+        name: "stripe_checkout",
+        description: `Create a Stripe Checkout session and return its payment link.
+- Use the offerId from stripe_prices (format 'stripe:<product_id>#<price_id>' or 'stripe:<price_id>')
+- Returns a sessionId, a url where the customer completes payment, and an accessToken
+- The accessToken can be reused: pass it back here to reuse the existing Stripe customer, or to stripe_purchases / stripe_portal
+- Creates a Stripe payment session only — it does not modify any Iaptic data${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            offerId: {
+              type: "string",
+              description: "Offer ID to purchase, as returned by the stripe_prices tool"
+            },
+            applicationUsername: {
+              type: "string",
+              description: "User identifier in your application"
+            },
+            successUrl: {
+              type: "string",
+              description: "URL to redirect the customer to after successful payment"
+            },
+            cancelUrl: {
+              type: "string",
+              description: "URL to redirect the customer to if they cancel"
+            },
+            mode: {
+              type: "string",
+              enum: ["payment", "subscription"],
+              description: "Payment mode. Defaults to 'subscription' for recurring prices, 'payment' otherwise"
+            },
+            accessToken: {
+              type: "string",
+              description: "Optional access token from a previous purchase, to reuse the existing Stripe customer"
+            },
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to create the checkout session for. Required when using master key."
+              }
+            } : {})
+          },
+          required: appNameRequired ? ["offerId", "successUrl", "cancelUrl", "appName"] : ["offerId", "successUrl", "cancelUrl"]
+        }
+      },
+      {
+        name: "stripe_portal",
+        description: `Create a Stripe Customer Portal session and return its URL.
+- The customer manages their subscription there (update card, cancel, etc.)
+- Requires the accessToken returned when the Stripe checkout session was created
+- Creates a Stripe portal session only — it does not modify any Iaptic data${appNameRequired ? '\n- Requires appName parameter when using master key' : ''}`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Checkout session ID (cs_*) or subscription ID (sub_*) identifying the customer"
+            },
+            accessToken: {
+              type: "string",
+              description: "Access token received when the Stripe checkout session was created"
+            },
+            returnUrl: {
+              type: "string",
+              description: "URL to return the customer to after they finish managing their subscription"
+            },
+            ...(appNameRequired ? {
+              appName: {
+                type: "string",
+                description: "Name of the app to create the portal session for. Required when using master key."
+              }
+            } : {})
+          },
+          required: appNameRequired ? ["accessToken", "appName"] : ["accessToken"]
         }
       },
       {
