@@ -1,7 +1,29 @@
 {
   "name": "mcp-server-iaptic",
-  "description": "Iaptic server for Model Context Protocol",
+  "mcpName": "io.github.iaptic/mcp-server-iaptic",
+  "description": "Query Iaptic in-app purchase data: customers, purchases, transactions, events and stats.",
   "author": "Jean-Christophe Hoelt <hoelt@iaptic.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/iaptic/mcp-server-iaptic#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iaptic/mcp-server-iaptic.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iaptic/mcp-server-iaptic/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "iaptic",
+    "in-app-purchase",
+    "subscriptions",
+    "receipt-validation",
+    "app-store",
+    "google-play",
+    "stripe"
+  ],
   "version": "1.2.1",
   "type": "module",
   "bin": {
@@ -14,6 +36,7 @@
     "package-lock.json",
     "tsconfig.json",
     "README.md",
+    "llms-install.md",
     "LICENSE"
   ],
   "engines": {
