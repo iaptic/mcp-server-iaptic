@@ -1,5 +1,4 @@
 # MCP Server for Iaptic
-[![smithery badge](https://smithery.ai/badge/mcp-server-iaptic)](https://smithery.ai/server/mcp-server-iaptic)
 
 A Model Context Protocol server for interacting with the [Iaptic API](https://www.iaptic.com). This server allows Claude or other AIs to interact with your Iaptic data to answer questions about your customers, purchases, transactions, and statistics.
 
@@ -9,39 +8,115 @@ The server is read-only with respect to your Iaptic data: tools can query custom
 
 ## Installation
 
-### Installing via Smithery
+Requires Node.js >= 18 and an Iaptic app. In the [Iaptic dashboard](https://www.iaptic.com), open **Settings** to find your **App Name** and **Secret Key** (the API key).
 
-To install Iaptic for Claude Desktop automatically via [Smithery](https://smithery.ai/server/mcp-server-iaptic):
-
-```bash
-npx -y @smithery/cli install mcp-server-iaptic --client claude
-```
-
-### Manual Installation
 ```bash
 # Run directly with npx
-npx mcp-server-iaptic --api-key YOUR_API_KEY --app-name YOUR_APP_NAME
+npx -y mcp-server-iaptic --api-key YOUR_API_KEY --app-name YOUR_APP_NAME
 
 # Or install globally
 npm install -g mcp-server-iaptic
 mcp-server-iaptic --api-key YOUR_API_KEY --app-name YOUR_APP_NAME
 ```
 
-## Usage with Claude Desktop
+### Configuration
 
-Add to your Claude Desktop configuration file:
+Credentials come from command-line arguments or, as a fallback, environment variables (a `.env` file in the working directory is also read). Prefer environment variables in client configs: arguments show up in process lists.
+
+| Argument | Environment variable | Description |
+|---|---|---|
+| `--app-name` | `IAPTIC_APP_NAME` | Your Iaptic app name. Always required. |
+| `--api-key` | `IAPTIC_API_KEY` | Your app's Secret Key. Required unless a master key is set. |
+| `--master-key` | `IAPTIC_MASTER_KEY` | Optional. Manage several apps from one server instead of an API key; every data tool then takes a required `appName` argument. |
+
+## Usage with MCP clients
+
+The server speaks MCP over stdio. Replace the placeholder values in each snippet.
+
+### Claude Desktop
+
+Add to `claude_desktop_config.json` (Settings → Developer → Edit Config):
 
 ```json
 {
-  "iaptic": {
-    "command": "npx",
-    "args": [
-      "mcp-server-iaptic",
-      "--api-key", "your-api-key-here",
-      "--app-name", "your-app-name-here"
-    ]
+  "mcpServers": {
+    "iaptic": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-iaptic"],
+      "env": {
+        "IAPTIC_API_KEY": "your-api-key-here",
+        "IAPTIC_APP_NAME": "your-app-name-here"
+      }
+    }
   }
 }
+```
+
+### Claude Code
+
+```bash
+claude mcp add iaptic \
+  -e IAPTIC_API_KEY=your-api-key-here \
+  -e IAPTIC_APP_NAME=your-app-name-here \
+  -- npx -y mcp-server-iaptic
+```
+
+### Cursor
+
+Add to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project):
+
+```json
+{
+  "mcpServers": {
+    "iaptic": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-iaptic"],
+      "env": {
+        "IAPTIC_API_KEY": "your-api-key-here",
+        "IAPTIC_APP_NAME": "your-app-name-here"
+      }
+    }
+  }
+}
+```
+
+### VS Code
+
+Add to `.vscode/mcp.json`. VS Code prompts for the key and keeps it out of the file:
+
+```json
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "iaptic-api-key",
+      "description": "Iaptic Secret Key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "iaptic": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-server-iaptic"],
+      "env": {
+        "IAPTIC_API_KEY": "${input:iaptic-api-key}",
+        "IAPTIC_APP_NAME": "your-app-name-here"
+      }
+    }
+  }
+}
+```
+
+### Cline
+
+Ask Cline to install it from this repository; it follows [`llms-install.md`](llms-install.md).
+
+### Docker
+
+```bash
+docker build -t mcp-server-iaptic .
+docker run -i --rm -e IAPTIC_API_KEY -e IAPTIC_APP_NAME mcp-server-iaptic
 ```
 
 ## Available Tools

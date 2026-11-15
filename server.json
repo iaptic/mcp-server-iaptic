@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.iaptic/mcp-server-iaptic",
+  "title": "Iaptic",
+  "description": "Query Iaptic in-app purchase data: customers, purchases, transactions, events and stats.",
+  "repository": {
+    "url": "https://github.com/iaptic/mcp-server-iaptic",
+    "source": "github"
+  },
+  "websiteUrl": "https://www.iaptic.com/documentation/analyzing-data-with-claude",
+  "version": "1.2.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mcp-server-iaptic",
+      "version": "1.2.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "IAPTIC_APP_NAME",
+          "description": "Your Iaptic app name (shown in the Iaptic dashboard Settings).",
+          "isRequired": true,
+          "format": "string"
+        },
+        {
+          "name": "IAPTIC_API_KEY",
+          "description": "Your Iaptic app's Secret Key (dashboard Settings). Required unless IAPTIC_MASTER_KEY is set.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "IAPTIC_MASTER_KEY",
+          "description": "Optional master key to manage several apps from one server. Replaces the API key; every data tool then takes an appName argument.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
